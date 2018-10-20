@@ -10,6 +10,7 @@ from skimage import draw
 import losses
 from PIL import ImageOps
 from bs4 import BeautifulSoup
+import pickle 
 
 # Train Utils
 def fit(model, dataloader, opt, loss_function, epoch):
@@ -272,7 +273,7 @@ class RandomSampler(data.sampler.Sampler):
 def get_experiment(exp_name):
   if exp_name == "trancos":
     dataset_name="trancos"
-    model_name="resfcn"
+    model_name="ResFCN"
     metric_name = "MAE"
 
   if exp_name == "shanghai":
@@ -282,18 +283,16 @@ def get_experiment(exp_name):
 
   if exp_name == "pascal":
     dataset_name="pascal"
-    model_name="resfcn"
+    model_name="ResFCN"
     metric_name = "mRMSE"
 
   if exp_name == "penguins":
     dataset_name="penguins"
-    model_name="resfcn"
+    model_name="ResFCN"
     metric_name = "MAE_penguin"
 
   print("Model: {} - Dataset: {} - Metric: {}".format(model_name, dataset_name,metric_name))
   return dataset_name, model_name, metric_name
-
-
 
 
 def poly2mask(rows, cols, shape):
@@ -312,3 +311,7 @@ def read_xml(fname):
         xml = BeautifulSoup(xml, "lxml")
 
     return xml
+
+def load_pkl(fname):
+    with open(fname, "rb") as f:        
+        return pickle.load(f)

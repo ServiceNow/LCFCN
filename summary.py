@@ -5,19 +5,24 @@ os.environ["CUDA_VISIBLE_DEVICES"]="7"
 
 import pandas as pd
 import os
-import torch
 import argparse
-import losses
-import numpy as np
 import utils as ut
 
-from torchvision import transforms
-from datasets import dataset_dict
-from models import model_dict
-
-def summary(dataset_name, model_name):
-  path_history = "checkpoints/history_{}_{}.json".format(dataset_name, model_name)
+def summary(dataset_name, model_name, 
+            checkpoints_path="checkpoints/"):
+            # checkpoints_path="/mnt/home/issam/LCFCNSaves/"):
+  
+  path_history = "{}/{}_{}/history.json".format(checkpoints_path, dataset_name, model_name)
   history = ut.load_json(path_history)
+
+  # if 1:
+  #   epoch = 695
+  #   path_test = "{}/{}_{}/test_MAE_695.json".format(checkpoints_path, dataset_name, model_name)
+  #   test_dict = ut.load_json(path_test)
+  #   test_dict["epoch"] = epoch
+  #   history["test"] = [test_dict]
+  #   history["best_val_epoch"] = epoch
+  #   ut.save_json(path_history, history)
 
   print("\nTrain-----------")
   print(pd.DataFrame(history["train"]))

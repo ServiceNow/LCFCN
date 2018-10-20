@@ -2,9 +2,8 @@ import torch.nn as nn
 import torchvision
 import torch
 from skimage import morphology as morph
-import torch.nn.functional as F
 import numpy as np
-import utils as ut
+
 import torch.utils.model_zoo as model_zoo
 
 class BaseModel(nn.Module):
@@ -49,8 +48,7 @@ class BaseModel(nn.Module):
 
 
 #----------- LC-ResFCN
-class Res50FCN(BaseModel):
-    
+class ResFCN(BaseModel):
     def __init__(self, n_classes):
         super().__init__(n_classes)
         
@@ -78,16 +76,12 @@ class Res50FCN(BaseModel):
                                    kernel_size=1)
 
         # # FREEZE BATCH NORMS
-        
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
                 m.weight.requires_grad = False
                 m.bias.requires_grad = False
 
-        
-        
     def forward(self, x):
-
         self.resnet50_32s.eval()
         input_spatial_dim = x.size()[2:]
         
@@ -261,7 +255,7 @@ class FCN8(BaseModel):
 
         return output[:, :, 31: (31 + h), 31: (31 + w)].contiguous()
 
-model_dict = {"resfcn":Res50FCN, "fcn8":FCN8}
+model_dict = {"ResFCN":ResFCN}
 
 
 

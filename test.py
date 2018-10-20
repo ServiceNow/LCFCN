@@ -1,20 +1,21 @@
 import matplotlib
 matplotlib.use('Agg')
 
-import pandas as pd
-import os
 import torch
 import argparse
-import losses
-import numpy as np
 import utils as ut
+import pandas as pd 
 
 from torchvision import transforms
 from datasets import dataset_dict
 from models import model_dict
 
-def test(dataset_name, model_name,metric_name):
-  path_history = "checkpoints/history_{}_{}.json".format(dataset_name, model_name)
+def test(dataset_name, model_name, metric_name, 
+         checkpoints_path="checkpoints/"):
+
+  path_history = "{}/{}_{}/history.json".format(checkpoints_path, dataset_name, model_name)
+  path_best_model = "{}/{}_{}/State_Dicts/best_model.pth".format(checkpoints_path, dataset_name, model_name)
+
   history = ut.load_json(path_history)
 
   transformer = ut.ComposeJoint(
@@ -27,15 +28,14 @@ def test(dataset_name, model_name,metric_name):
                                        transform_function=transformer)
 
   model = model_dict[model_name](n_classes=test_set.n_classes).cuda()
-  path_best_model = "/mnt/home/issam/LCFCNSaves/pascal/State_Dicts/best_model.pth"
-  model.load_state_dict(torch.load(history["path_best_model"]))
-  import ipdb; ipdb.set_trace()  # breakpoint 9c3be7a2 //
+  # path_best_model = "/mnt/home/issam/LCFCNSaves/pascal/State_Dicts/best_model.pth"
+  model.load_state_dict(torch.load(path_best_model))
   
   testDict = ut.val(model=model, dataset=test_set, 
-                        epoch=history["best_val_epoch"],metric_name=metric_name)
-  history["test"] += [testDict]
-  # Update history
-  ut.save_json(path_history, history)
+                    epoch=history["best_val_epoch"], metric_name=metric_name)
+
+  print(pd.DataFrame([testDict]))
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
