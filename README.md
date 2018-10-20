@@ -45,9 +45,8 @@ python train.py -e trancos
 
 | Method           | Trancos | Pascal|
 |------------------|---------|-------|
-| ResFCN           | 3.39    |   -   | 
-| FCN8             | -       | 0.5   | 
-| Paper            | 3.32    | 0.3   | 
+| ResFCN           | 3.39    | 0.31   |  
+| Paper            | 3.32    | 0.31   | 
 
 
 

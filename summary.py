@@ -16,12 +16,17 @@ def summary(dataset_name, model_name,
   history = ut.load_json(path_history)
 
   # if 1:
-  #   epoch = 695
-  #   path_test = "{}/{}_{}/test_MAE_695.json".format(checkpoints_path, dataset_name, model_name)
+  #   checkpoints_path="/mnt/home/issam/LCFCNSaves/"
+  #   path_history = "{}/{}_{}/history.pkl".format(checkpoints_path, dataset_name, model_name)
+  #   history = ut.load_pkl(path_history)
+  #   epoch = 45
+  #   path_test = "{}/{}_{}/test_mRMSE_{}.json".format(checkpoints_path, dataset_name, model_name, epoch)
   #   test_dict = ut.load_json(path_test)
   #   test_dict["epoch"] = epoch
   #   history["test"] = [test_dict]
   #   history["best_val_epoch"] = epoch
+  #   checkpoints_path="checkpoints/"
+  #   path_history = "{}/{}_{}/history.json".format(checkpoints_path, dataset_name, model_name)
   #   ut.save_json(path_history, history)
 
   print("\nTrain-----------")
