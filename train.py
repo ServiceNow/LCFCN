@@ -87,9 +87,7 @@ def train(dataset_name, model_name, metric_name, path_history, path_model, path_
     ut.save_json(path_history, history)
 
     # %%%%%%%%%%% 2. VALIDATION PHASE %%%%%%%%%%%%"
-    with torch.no_grad():
-      import ipdb; ipdb.set_trace()  # breakpoint d9d0005f //
-      
+    with torch.no_grad():      
       val_dict = ut.val(model=model, dataset=val_set, epoch=epoch, 
                         metric_name=metric_name)
 
