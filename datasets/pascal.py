@@ -6,6 +6,30 @@ import torchvision.transforms.functional as FT
 from PIL import Image
 import utils as ut
 
+def get_pointDict(path, imgNames):
+    pointDict = {}
+    for i, img_name in enumerate(imgNames):
+        print(i, img_name)
+        pointDict[img_name] = []
+        objects = ut.read_xml(path + "/Annotations/%s.xml" % img_name).findAll("object")
+        for obj in objects:
+            if int(obj.difficult.text):
+                continue
+
+            ymin = int(obj.ymin.text)
+            ymax = int(obj.ymax.text)
+
+            xmin = int(obj.xmin.text)
+            xmax = int(obj.xmax.text)
+
+            y = (ymax + ymin) // 2
+            x = (xmax + xmin) // 2
+            name = obj.find("name").text
+            pointDict[img_name] += [{"y":y, "x":x,"name":name}]
+      
+            
+    return pointDict
+
 class Pascal2007(data.Dataset):
     name2class = {  
                    "aeroplane":0,
@@ -54,8 +78,26 @@ class Pascal2007(data.Dataset):
                                 for t in 
                                 ut.read_text(fname_path + "/test.txt")]
         
+        if os.path.exists(path_pointJSON):
+          self.pointsJSON = ut.load_json(path_pointJSON)
+        else:
+          pointDict = get_pointDict(path, self.imgNames)
+          ut.save_json(path_pointJSON, pointDict)
 
-        self.pointsJSON = ut.load_json(path_pointJSON)
+        # for j, key in enumerate(pointDict):
+        #   print(j)
+        #   pList1 = pointDict[key]
+        #   pList2 = self.pointsJSON[key]
+
+        #   for p1 in pList1:
+        #     y, x = p1["y"], p1["x"]
+        #     flag = False
+        #     for p2 in pList2:
+        #       y2, x2 = p2["y"], p2["x"]
+        #       if y == y2 and x == x2:
+        #         flag = True
+        #         break
+        #     assert flag == True
 
         self.split = split
         self.n_classes = 21
@@ -119,5 +161,6 @@ class Pascal2007(data.Dataset):
 
         return {"counts":torch.LongTensor(counts), 
                 "images":img, "points":points, 
+                "image_path":img_path,
                 "index":index, "name":img_name, 
                 "counts_difficult":torch.LongTensor(counts_difficult)}

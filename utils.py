@@ -153,7 +153,7 @@ def val_mRMSE(model, dataset, epoch):
   assert not np.any(true_count==(-1))
   assert not np.any(pred_count==(-1))
   score_dict["mRMSE"] = np.sqrt(np.mean((pred_count - true_count)**2, 0)).mean()
-  score_dict["mRMSE_difficult"] = np.sqrt(np.mean((pred_count - true_difficult_count)**2, 0)).mean()
+  # score_dict["mRMSE_difficult"] = np.sqrt(np.mean((pred_count - true_difficult_count)**2, 0)).mean()
 
   return score_dict
 

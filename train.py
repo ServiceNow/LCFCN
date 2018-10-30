@@ -1,9 +1,5 @@
-import matplotlib
-matplotlib.use('Agg')
-
 import os
 import torch
-import argparse
 import losses
 import numpy as np
 import utils as ut
@@ -12,18 +8,13 @@ from torchvision import transforms
 from datasets import dataset_dict
 from models import model_dict
 
-def train(dataset_name, model_name, metric_name, reset=False):  
+def train(dataset_name, model_name, metric_name, path_history, path_model, path_opt, path_best_model, reset=False):  
   # SET SEED
   np.random.seed(1)
   torch.manual_seed(1) 
   torch.cuda.manual_seed_all(1)
 
-  # Paths
-  name = "{}_{}".format(dataset_name, model_name)
-  path_model = "checkpoints/model_{}.pth".format(name)
-  path_opt = "checkpoints/opt_{}.pth".format(name)
-  path_best_model = "checkpoints/best_model_{}.pth".format(name)
-  path_history = "checkpoints/history_{}.json".format(name)
+
 
   # Train datasets
   transformer = ut.ComposeJoint(
@@ -35,11 +26,11 @@ def train(dataset_name, model_name, metric_name, reset=False):
 
   train_set = dataset_dict[dataset_name](split="train", 
                                          transform_function=transformer)
+  
   trainloader = torch.utils.data.DataLoader(train_set, batch_size=1, 
-                                            num_workers=2,
+                                            num_workers=0,
                                             drop_last=False,
                                             sampler=ut.RandomSampler(train_set))
-  
   # Val datasets
   transformer = ut.ComposeJoint(
                     [
@@ -118,20 +109,3 @@ def train(dataset_name, model_name, metric_name, reset=False):
           history["test"] += [testDict]
         
       ut.save_json(path_history, history)
-
-
-
-if __name__ == "__main__":
-  # SEE IF CUDA IS AVAILABLE
-  assert torch.cuda.is_available()
-  print("CUDA: %s" % torch.version.cuda)
-  print("Pytroch: %s" % torch.__version__)
-
-  parser = argparse.ArgumentParser()
-  parser.add_argument('-r','--reset', default=0, type=int)
-  parser.add_argument('-e','--exp_name', default="trancos")
-  args = parser.parse_args()
-
-  dataset_name, model_name, metric_name = ut.get_experiment(args.exp_name)
-  train(dataset_name=dataset_name, model_name=model_name, 
-        metric_name=metric_name, reset=args.reset)

@@ -22,13 +22,13 @@ bash checkpoints/download.sh
 2. Output the saved results,
 
 ```
-python summary.py -e trancos
+python main.py -m summary -e trancos
 ```
 
 3. Re-evaluate the saved model,
 
 ```
-python test.py -e trancos
+python main.py -m test -e trancos
 ```
 
 
@@ -37,7 +37,7 @@ python test.py -e trancos
 To train the model,
 
 ```
-python train.py -e trancos
+python main.py -m train -e trancos
 ```
 
 
