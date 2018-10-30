@@ -12,40 +12,38 @@ class BaseModel(nn.Module):
         self.trained_images = set()
         self.n_classes = n_classes
 
-
+    @torch.no_grad()
     def predict(self, batch, method="probs"):
         self.eval()
-        with torch.no_grad():
-            if method == "counts":
-                images = batch["images"].cuda()
-                pred_mask = self(images).data.max(1)[1].squeeze().cpu().numpy()
+        if method == "counts":
+            images = batch["images"].cuda()
+            pred_mask = self(images).data.max(1)[1].squeeze().cpu().numpy()
 
-                counts = np.zeros(self.n_classes-1)
+            counts = np.zeros(self.n_classes-1)
 
-                for category_id in np.unique(pred_mask):
-                    if category_id == 0:
-                        continue
-                    blobs_category = morph.label(pred_mask==category_id)
-                    n_blobs = (np.unique(blobs_category) != 0).sum()
-                    counts[category_id-1] = n_blobs
+            for category_id in np.unique(pred_mask):
+                if category_id == 0:
+                    continue
+                blobs_category = morph.label(pred_mask==category_id)
+                n_blobs = (np.unique(blobs_category) != 0).sum()
+                counts[category_id-1] = n_blobs
 
-                return counts[None]
+            return counts[None]
 
-            elif method == "blobs": 
+        elif method == "blobs": 
 
-                images = batch["images"].cuda()
-                pred_mask = self(images).data.max(1)[1].squeeze().cpu().numpy()
+            images = batch["images"].cuda()
+            pred_mask = self(images).data.max(1)[1].squeeze().cpu().numpy()
 
-                h,w = pred_mask.shape
-                blobs = np.zeros((self.n_classes-1, h, w), int)
+            h,w = pred_mask.shape
+            blobs = np.zeros((self.n_classes-1, h, w), int)
 
-                for category_id in np.unique(pred_mask):
-                    if category_id == 0:
-                        continue
-                    blobs[category_id-1] = morph.label(pred_mask==category_id)
-                    
-                return blobs[None]
-
+            for category_id in np.unique(pred_mask):
+                if category_id == 0:
+                    continue
+                blobs[category_id-1] = morph.label(pred_mask==category_id)
+                
+            return blobs[None]
 
 #----------- LC-ResFCN
 class ResFCN(BaseModel):
@@ -248,16 +246,10 @@ class FCN8(BaseModel):
                                          9:9+upscore_pool4.size(3)]
 
         output = self.upscore8(score_pool3c + upscore_pool4) 
-        
-        # third
-
-        # concat
 
         return output[:, :, 31: (31 + h), 31: (31 + w)].contiguous()
 
 model_dict = {"FCN8":FCN8, "ResFCN":ResFCN}
-
-
 
 # Utils
 def get_upsampling_weight(in_channels, out_channels, kernel_size):

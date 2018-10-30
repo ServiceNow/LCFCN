@@ -1,10 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 
-
 import pandas as pd
-import os
-import argparse
 import utils as ut
 
 def summary(dataset_name, model_name, 

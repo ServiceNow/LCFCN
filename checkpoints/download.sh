@@ -10,3 +10,9 @@ unzip trancos_ResFCN.zip -d trancos_ResFCN
 curl -L https://www.dropbox.com/sh/pwmoej499sfqb08/AABY13YraHYF51yw62Zc1w0-a?dl=0 > pascal_ResFCN.zip
 mkdir pascal_ResFCN
 unzip pascal_ResFCN.zip -d pascal_ResFCN
+
+
+# # Download Shanghai checkpoint
+# curl -L https://www.dropbox.com/sh/pwmoej499sfqb08/AABY13YraHYF51yw62Zc1w0-a?dl=0 > pascal_ResFCN.zip
+# mkdir pascal_ResFCN
+# unzip pascal_ResFCN.zip -d pascal_ResFCN

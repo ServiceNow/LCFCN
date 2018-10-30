@@ -14,8 +14,6 @@ def train(dataset_name, model_name, metric_name, path_history, path_model, path_
   torch.manual_seed(1) 
   torch.cuda.manual_seed_all(1)
 
-
-
   # Train datasets
   transformer = ut.ComposeJoint(
                     [ut.RandomHorizontalFlipJoint(),            
