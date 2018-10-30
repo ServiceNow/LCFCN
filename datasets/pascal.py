@@ -162,5 +162,4 @@ class Pascal2007(data.Dataset):
         return {"counts":torch.LongTensor(counts), 
                 "images":img, "points":points, 
                 "image_path":img_path,
-                "index":index, "name":img_name, 
-                "counts_difficult":torch.LongTensor(counts_difficult)}
+                "index":index, "name":img_name}

@@ -131,15 +131,15 @@ def val_MAE_penguin(model, dataset, epoch):
 def val_mRMSE(model, dataset, epoch):
   n_images = len(dataset)
   true_count = np.ones((n_images,20))*(-1)
-  true_difficult_count = np.ones((n_images,20))*(-1)
   pred_count = np.ones((n_images,20))*(-1)
 
   for i in range(n_images):
     batch = dataset[i]
     batch["images"] = batch["images"][None]
-    
+
+    assert batch["image_path"] not in model.trained_images
+
     true_count[i] = t2n(batch["counts"])
-    true_difficult_count[i] = t2n(batch["counts_difficult"])
     pred_count[i] = model.predict(batch, method="counts")
 
 
@@ -153,7 +153,6 @@ def val_mRMSE(model, dataset, epoch):
   assert not np.any(true_count==(-1))
   assert not np.any(pred_count==(-1))
   score_dict["mRMSE"] = np.sqrt(np.mean((pred_count - true_count)**2, 0)).mean()
-  # score_dict["mRMSE_difficult"] = np.sqrt(np.mean((pred_count - true_difficult_count)**2, 0)).mean()
 
   return score_dict
 
