@@ -53,9 +53,6 @@ def val(model, dataset, epoch, metric_name):
   if metric_name == "MAE":
     score_dict = val_MAE(model, dataset, epoch)
 
-  if metric_name == "MAE_penguin":
-    score_dict = val_MAE_penguin(model, dataset, epoch)
-
   elif metric_name == "mRMSE":
     score_dict = val_mRMSE(model, dataset, epoch)
 
@@ -96,36 +93,6 @@ def val_MAE(model, dataset, epoch):
 
   return score_dict
 
-@torch.no_grad()
-def val_MAE_penguin(model, dataset, epoch):
-  n_images = len(dataset)
-
-  true_count = np.ones(n_images)*(-1)
-  pred_count = np.ones(n_images)*(-1)
-
-  true_count_median = np.ones(n_images)*(-1)
-
-  for i in range(n_images):
-    batch = dataset[i]
-    batch["images"] = batch["images"][None]
-
-    true_count[i] = batch["counts"].item()
-    true_count_median[i] = batch["counts_median"].item()
-    pred_count[i] = model.predict(batch, method="counts")
-
-    mae = (np.abs(true_count[:i+1] - pred_count[:i+1])).mean() 
-
-    if i % 50 == 0 or i == (n_images - 1):
-      print(("%d - %d/%d - Validating %s set - MAE: %.3f" % 
-            (epoch, i, n_images, dataset.split, mae)))
-
-  score_dict = {}
-  assert not np.any(true_count==(-1))
-  assert not np.any(pred_count==(-1))
-  score_dict["mae"] = (np.abs(true_count - pred_count)).mean() 
-  score_dict["mae_median"] = (np.abs(true_count_median - pred_count)).mean() 
-
-  return score_dict
 
 @torch.no_grad()
 def val_mRMSE(model, dataset, epoch):
@@ -285,10 +252,6 @@ def get_experiment(exp_name):
     model_name="ResFCN"
     metric_name = "mRMSE"
 
-  if exp_name == "penguins":
-    dataset_name="penguins"
-    model_name="ResFCN"
-    metric_name = "MAE_penguin"
 
   print("Model: {} - Dataset: {} - Metric: {}".format(model_name, dataset_name,metric_name))
   return dataset_name, model_name, metric_name
