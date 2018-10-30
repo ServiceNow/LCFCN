@@ -19,7 +19,6 @@ def main():
 
   # Paths
   name = "{}_{}".format(dataset_name, model_name)
-  import ipdb; ipdb.set_trace()  # breakpoint 543356ea //
   
   path_model = "checkpoints/model_{}.pth".format(name)
   path_opt = "checkpoints/opt_{}.pth".format(name)
