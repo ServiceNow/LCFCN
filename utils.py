@@ -244,7 +244,7 @@ def get_experiment(exp_name):
 
   if exp_name == "shanghai":
      dataset_name="shanghai"
-     model_name="fcn8"
+     model_name="FCN8"
      metric_name = "MAE"
 
   if exp_name == "pascal":

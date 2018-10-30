@@ -255,7 +255,7 @@ class FCN8(BaseModel):
 
         return output[:, :, 31: (31 + h), 31: (31 + w)].contiguous()
 
-model_dict = {"ResFCN":ResFCN}
+model_dict = {"FCN8":FCN8, "ResFCN":ResFCN}
 
 
 

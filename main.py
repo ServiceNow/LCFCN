@@ -3,9 +3,7 @@ matplotlib.use('Agg')
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="7"
 
-import torch
 import argparse
-import numpy as np
 import train, test, summary
 import utils as ut
 

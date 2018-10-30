@@ -57,4 +57,5 @@ class ShanghaiB(data.Dataset):
 
 
         return {"images":image, "points":points, 
-                "counts":counts, "index":index}
+                "counts":counts, "index":index,
+                "image_path":self.path + "/images/" + name}
