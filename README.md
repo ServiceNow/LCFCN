@@ -59,7 +59,7 @@ python main.py -e trancos -m apply -image figures/test.png
 
 The expected output is shown below, and the output image will be saved in the same directory as the test image.
 
-Solarized dark             |  Solarized Ocean
+Trancos test image           |  Trancos predicted image
 :-------------------------:|:-------------------------:
 ![Trancos test image](figures/test.png) |  ![Trancos pred image](figures/test.png_blobs_count:32.png)
 
