@@ -5,7 +5,7 @@ from skimage.io import imread,imsave
 from torchvision import transforms
 from models import model_dict
 
-def apply(image_path, model_name, path_best_model=""):
+def apply(image_path, model_name, model_path):
   transformer = ut.ComposeJoint(
                     [
                          [transforms.ToTensor(), None],
@@ -15,7 +15,7 @@ def apply(image_path, model_name, path_best_model=""):
 
   # Load best model
   model = model_dict[model_name](n_classes=2).cuda()
-  model.load_state_dict(torch.load(path_best_model))
+  model.load_state_dict(torch.load(model_path))
 
   # Read Image
   image_raw = imread(image_path)
