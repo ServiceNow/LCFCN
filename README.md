@@ -49,6 +49,23 @@ python main.py -m train -e trancos
 | Paper            | 3.32    | 0.31   | 
 
 
+## Test on single image
+
+We test a trained ResNet on a Trancos example image as follows:
+
+```
+python main.py -e trancos -m apply -image figures/test.png
+```
+
+The expected output is shown below, and the output image will be saved in the same directory as the test image.
+
+Solarized dark             |  Solarized Ocean
+:-------------------------:|:-------------------------:
+![Trancos test image](figures/test.png) |  ![Trancos pred image](figures/test.png_blobs_count:32.png)
+
+
+
+
 
 ## Citation 
 If you find the code useful for your research, please cite:
