@@ -54,7 +54,9 @@ python main.py -m train -e trancos
 We test a trained ResNet on a Trancos example image as follows:
 
 ```
-python main.py -image_path figures/test.png -model_path checkpoints/best_model_trancos_ResFCN.pth -model_name ResFCN 
+python main.py -image_path figures/test.png \
+                -model_path checkpoints/best_model_trancos_ResFCN.pth \
+                -model_name ResFCN
 ```
 
 The expected output is shown below, and the output image will be saved in the same directory as the test image.
