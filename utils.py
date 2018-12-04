@@ -11,6 +11,7 @@ import losses
 from PIL import ImageOps
 from bs4 import BeautifulSoup
 import pickle 
+from skimage.segmentation import mark_boundaries
 
 # Train Utils
 def fit(model, dataloader, opt, loss_function, epoch):
@@ -236,27 +237,6 @@ class RandomSampler(data.sampler.Sampler):
     def __len__(self):
         return self.size
 
-def get_experiment(exp_name):
-  if exp_name == "trancos":
-    dataset_name="trancos"
-    model_name="ResFCN"
-    metric_name = "MAE"
-
-  if exp_name == "shanghai":
-     dataset_name="shanghai"
-     model_name="FCN8"
-     metric_name = "MAE"
-
-  if exp_name == "pascal":
-    dataset_name="pascal"
-    model_name="ResFCN"
-    metric_name = "mRMSE"
-
-
-  print("Model: {} - Dataset: {} - Metric: {}".format(model_name, dataset_name,metric_name))
-  return dataset_name, model_name, metric_name
-
-
 def poly2mask(rows, cols, shape):
     assert len(rows) == len(cols)
     fill_row_coords, fill_col_coords = draw.polygon(rows, cols, shape)
@@ -277,3 +257,43 @@ def read_xml(fname):
 def load_pkl(fname):
     with open(fname, "rb") as f:        
         return pickle.load(f)
+
+
+def combine_image_blobs(image_raw, blobs_mask):
+  blobs_rgb = label2rgb(blobs_mask)
+
+  image_raw = image_raw*0.5 + blobs_rgb * 0.5
+  image_raw /= image_raw.max()
+
+  return mark_boundaries(image_raw, blobs_mask)
+
+
+def label2rgb(labels):
+    labels = np.squeeze(labels)
+    colors = color_map(np.max(np.unique(labels)) + 1)
+    output = np.zeros(labels.shape + (3,), dtype=np.float64)
+
+    for i in range(len(colors)):
+      output[(labels == i).nonzero()] = colors[i]
+
+    return output
+
+def color_map(N=256, normalized=False):
+    def bitget(byteval, idx):
+        return ((byteval & (1 << idx)) != 0)
+
+    dtype = 'float32' if normalized else 'uint8'
+    cmap = np.zeros((N, 3), dtype=dtype)
+    for i in range(N):
+        r = g = b = 0
+        c = i
+        for j in range(8):
+            r = r | (bitget(c, 0) << 7-j)
+            g = g | (bitget(c, 1) << 7-j)
+            b = b | (bitget(c, 2) << 7-j)
+            c = c >> 3
+
+        cmap[i] = np.array([r, g, b])
+
+    cmap = cmap/255 if normalized else cmap
+    return cmap

@@ -1,6 +1,5 @@
-from datasets import trancos, shanghai, pascal, penguins
+from datasets import trancos, shanghai, pascal
 
 dataset_dict = {"trancos":trancos.Trancos, 
                 "shanghai":shanghai.ShanghaiB,
-                "pascal":pascal.Pascal2007,
-                "penguins":penguins.PenguinsMixed}
+                "pascal":pascal.Pascal2007}
