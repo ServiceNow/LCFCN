@@ -11,6 +11,22 @@ Given a test image, the trained model outputs blobs in the image, then counts th
 
 ![Shanghai test image](figures/shanghai.png)
 
+## Test on single image
+
+We test a trained ResNet on a Trancos example image as follows:
+
+```
+python main.py -image_path figures/test.png \
+                -model_path checkpoints/best_model_trancos_ResFCN.pth \
+                -model_name ResFCN
+```
+
+The expected output is shown below, and the output image will be saved in the same directory as the test image.
+
+Trancos test image           |  Trancos predicted image
+:-------------------------:|:-------------------------:
+![Trancos test image](figures/test.png) |  ![Trancos pred image](figures/test.png_blobs_count:32.png)
+
 
 ## Running the saved models
 
@@ -47,24 +63,6 @@ python main.py -m train -e trancos
 |------------------|---------|-------|
 | ResFCN           | 3.39    | 0.31   |  
 | Paper            | 3.32    | 0.31   | 
-
-
-## Test on single image
-
-We test a trained ResNet on a Trancos example image as follows:
-
-```
-python main.py -image_path figures/test.png \
-                -model_path checkpoints/best_model_trancos_ResFCN.pth \
-                -model_name ResFCN
-```
-
-The expected output is shown below, and the output image will be saved in the same directory as the test image.
-
-Trancos test image           |  Trancos predicted image
-:-------------------------:|:-------------------------:
-![Trancos test image](figures/test.png) |  ![Trancos pred image](figures/test.png_blobs_count:32.png)
-
 
 
 
