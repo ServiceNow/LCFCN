@@ -18,8 +18,8 @@ class Trancos(data.Dataset):
         self.transform_function = transform_function
         
         ############################
-        # self.path_base = "datasets/TRANCOS_v3/"
-        self.path_base = "/mnt/datasets/public/issam/Trancos/"
+        self.path_base = "datasets/TRANCOS_v3/"
+        # self.path_base = "/mnt/datasets/public/issam/Trancos/"
 
         if split == "train":
             fname = self.path_base + "/image_sets/training.txt"
