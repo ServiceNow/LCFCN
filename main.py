@@ -1,7 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="7"
+#os.environ["CUDA_VISIBLE_DEVICES"]="7"
 
 import argparse
 import applyOnImage
