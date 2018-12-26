@@ -60,7 +60,7 @@ class Trancos(data.Dataset):
         if self.transform_function is not None:
             image, points = self.transform_function(collection)
             
-        if np.all(points == -1):
+        if (points == -1).all():
             pass
         else:
             assert int(points.sum()) == counts[0]
