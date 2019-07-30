@@ -46,8 +46,9 @@ class ShanghaiB(data.Dataset):
         pointList = pointList["image_info"][0][0][0][0][0] 
         
         points = np.zeros(image.shape[:2], "uint8")[:,:,None]
+        H, W = image.shape[:2]
         for x, y in pointList:
-            points[int(y), int(x)] = 1
+            points[min(int(y), H-1), min(int(x), W-1)] = 1
 
         counts = torch.LongTensor(np.array([pointList.shape[0]]))
 
