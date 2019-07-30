@@ -34,6 +34,9 @@ Trancos test image           |  Trancos predicted image
 ```
 bash checkpoints/download.sh
 ```
+For the shanghai model, download the checkpoint from this link:
+
+https://drive.google.com/file/d/1N75fun1I1XWh1LuKmi60QXF2SgCPLLLQ/view?usp=sharing
 
 2. Output the saved results,
 
