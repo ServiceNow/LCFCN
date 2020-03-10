@@ -74,10 +74,11 @@ python main.py -m train -e trancos
 If you find the code useful for your research, please cite:
 
 ```bibtex
-@Article{laradji2018blobs,
-    title={Where are the Blobs: Counting by Localization with Point Supervision},
-    author={Laradji, Issam H and Rostamzadeh, Negar and Pinheiro, Pedro O and Vazquez, David and Schmidt, Mark},
-    journal = {ECCV},
-    year = {2018}
+@inproceedings{laradji2018blobs,
+  title={Where are the blobs: Counting by localization with point supervision},
+  author={Laradji, Issam H and Rostamzadeh, Negar and Pinheiro, Pedro O and Vazquez, David and Schmidt, Mark},
+  booktitle={Proceedings of the European Conference on Computer Vision (ECCV)},
+  pages={547--562},
+  year={2018}
 }
 ```
