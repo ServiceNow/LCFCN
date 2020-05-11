@@ -1,74 +1,100 @@
 # LCFCN - ECCV 2018
+
 ## Where are the Blobs: Counting by Localization with Point Supervision
 [[Paper]](https://arxiv.org/abs/1807.09856)[[Video]](https://youtu.be/DHKD8LGvX6c)
 
-## Requirements
+Turn your segmentation model into a landmark detection model using the lcfcn loss. It can learn to output predictions like in the following image by training on point-level annotations only.
+This script outputs the following dashboard
+![](results/shanghai.png)
 
-- Pytorch version 0.4 or higher.
-
-## Description
-Given a test image, the trained model outputs blobs in the image, then counts the number of predicted blobs (see Figure below).
-
-![Shanghai test image](figures/shanghai.png)
-
-## Test on single image
-
-We test a trained ResNet on a Trancos example image as follows:
+## Usage
 
 ```
-python main.py -image_path figures/test.png \
-                -model_path checkpoints/best_model_trancos_ResFCN.pth \
-                -model_name ResFCN
+pip install git+https://github.com/ElementAI/LCFCN
 ```
 
-The expected output is shown below, and the output image will be saved in the same directory as the test image.
+```python
+from lcfcn import lcfcn_loss
 
-Trancos test image           |  Trancos predicted image
-:-------------------------:|:-------------------------:
-![Trancos test image](figures/test.png) |  ![Trancos pred image](figures/test.png_blobs_count:32.png)
+# compute per-pixel logits using any segmentation model
+logits = seg_model.forward(images)
 
-
-## Running the saved models
-
-1. Download the checkpoints,
-```
-bash checkpoints/download.sh
-```
-For the shanghai model, download the checkpoint from this link:
-
-https://drive.google.com/file/d/1N75fun1I1XWh1LuKmi60QXF2SgCPLLLQ/view?usp=sharing
-
-2. Output the saved results,
-
-```
-python main.py -m summary -e trancos
-```
-
-3. Re-evaluate the saved model,
-
-```
-python main.py -m test -e trancos
+# compute lcfcn loss given 'points' as H x W mask
+loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
+loss.backward()
 ```
 
 
-## Training the models from scratch
 
-To train the model,
+## Experiments
+
+### 1. Install dependencies
 
 ```
-python main.py -m train -e trancos
+pip install -r requirements.txt
+```
+This command installs pydicom and the [Haven library](https://github.com/ElementAI/haven) which helps in managing the experiments.
+
+
+### 2. Download Datasets
+
+- Shanghai Dataset
+  
+  ```
+  wget -O shanghai_tech.zip https://www.dropbox.com/s/fipgjqxl7uj8hd5/ShanghaiTech.zip?dl=0
+  ```
+- Trancos Dataset 
+  ```
+  wget http://agamenon.tsc.uah.es/Personales/rlopez/data/trancos/TRANCOS_v3.tar.gz
+  ```
+<!-- 
+#### Model
+- Shanghai: `curl -L https://www.dropbox.com/sh/pwmoej499sfqb08/AABY13YraHYF51yw62Zc1w0-a?dl=0 `
+- Trancos: `curl -L https://www.dropbox.com/sh/rms4dg5autwtpnf/AADQBOr1ruFsptbqG_uPt_zCa?dl=0` -->
+
+#### 2.2 Run training and validation
+
+```
+python trainval.py -e trancos -d <datadir> -sb <savedir_base> -r 1
 ```
 
+- `<datadir>` is where the dataset is located.
+- `<savedir_base>` is where the experiment weights and results will be saved.
+- `-e trancos` specifies the trancos training hyper-parameters defined in [`exp_configs.py`](exp_configs.py).
 
-## Benchmark
+###  3. Results
+#### 3.1 Launch Jupyter from terminal
 
-| Method           | Trancos | Pascal|
-|------------------|---------|-------|
-| ResFCN           | 3.39    | 0.31   |  
-| Paper            | 3.32    | 0.31   | 
+```
+> jupyter nbextension enable --py widgetsnbextension --sys-prefix
+> jupyter notebook
+```
 
+####  3.2 Run the following from a Jupyter cell
+```python
+from haven import haven_jupyter as hj
+from haven import haven_results as hr
 
+# path to where the experiments got saved
+savedir_base = <savedir_base>
 
+# filter exps
+filterby_list = [('dataset.name','trancos')]
+# get experiments
+rm = hr.ResultManager(savedir_base=savedir_base, 
+                      filterby_list=filterby_list, 
+                      verbose=0)
+# dashboard variables
+legend_list = ['model.base']
+title_list = ['dataset', 'model']
+y_metrics = ['val_mae']
+
+# launch dashboard
+hj.get_dashboard(rm, vars(), wide_display=True)
+```
+
+This script outputs the following dashboard
+![](results/dashboard_trancos.png)
 
 ## Citation 
 If you find the code useful for your research, please cite:

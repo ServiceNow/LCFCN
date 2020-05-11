@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pt
+*.out
+
+__pycache__/
+.vscode/
+*.ckpt
+
+results/*.ipynb
+results/*.ipynb*
+src/datasets/synbols
+usr_configs.py
+tmp.png
