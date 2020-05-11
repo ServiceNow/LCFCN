@@ -42,9 +42,7 @@ This command installs pydicom and the [Haven library](https://github.com/Element
 
 - Shanghai Dataset
   
-  ```
-  wget -O shanghai_tech.zip https://www.dropbox.com/s/fipgjqxl7uj8hd5/ShanghaiTech.zip?dl=0
-  ```
+  https://www.dropbox.com/s/kqqkl0exfshsw8v/mcnn_shtechB_110.h5?dl=1&fbclid=IwAR2LxhLqdyfEQx6olkTIUy-chTMhOzqMLQKcPErSTmiM5LhmeBnnGltIqVY
 - Trancos Dataset 
   ```
   wget http://agamenon.tsc.uah.es/Personales/rlopez/data/trancos/TRANCOS_v3.tar.gz
