@@ -3,14 +3,11 @@
 ## Where are the Blobs: Counting by Localization with Point Supervision
 [[Paper]](https://arxiv.org/abs/1807.09856)[[Video]](https://youtu.be/DHKD8LGvX6c)
 
-Turn your segmentation model into a landmark detection model using the lcfcn loss. It can learn to output predictions like in the following image by training on point-level annotations only.
 
-## Output 
-<img src="results/landmark.png" width="450" height="150">
 
 
 ## Usage
-
+Turn your segmentation model into a counting and a landmark detection model using the lcfcn loss.
 ```
 pip install git+https://github.com/ElementAI/LCFCN
 ```
@@ -21,10 +18,14 @@ from lcfcn import lcfcn_loss
 # compute an CxHxW logits mask using any segmentation model
 logits = seg_model.forward(images)
 
-# compute lcfcn loss given 'points' as HxW mask
+# compute loss given 'points' as HxW mask (1 pixel label per object)
 loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
 loss.backward()
 ```
+## Output 
+The model can learn to output the following predictions training on point supervision only.
+
+<img src="results/landmark.png" width="450" height="150">
 
 
 
