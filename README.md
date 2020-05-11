@@ -15,10 +15,10 @@ pip install git+https://github.com/ElementAI/LCFCN
 ```python
 from lcfcn import lcfcn_loss
 
-# compute per-pixel logits using any segmentation model
+# compute an CxHxW logits mask using any segmentation model
 logits = seg_model.forward(images)
 
-# compute lcfcn loss given 'points' as H x W mask
+# compute lcfcn loss given 'points' as HxW mask
 loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
 loss.backward()
 ```
