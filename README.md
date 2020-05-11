@@ -4,6 +4,9 @@
 [[Paper]](https://arxiv.org/abs/1807.09856)[[Video]](https://youtu.be/DHKD8LGvX6c)
 
 Turn your segmentation model into a landmark detection model using the lcfcn loss. It can learn to output predictions like in the following image by training on point-level annotations only.
+
+## Output 
+
 ![](results/landmark.png)
 
 ## Usage
