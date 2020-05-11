@@ -3,7 +3,7 @@
 ## Where are the Blobs: Counting by Localization with Point Supervision
 [[Paper]](https://arxiv.org/abs/1807.09856)[[Video]](https://youtu.be/DHKD8LGvX6c)
 
-Make the segmentation model learn to count and localize objects by adding a single line of code. Instead of the cross-entropy loss on the per-pixels, apply the lcfcn loss.
+Make the segmentation model learn to count and localize objects by adding a single line of code. Instead of applying the cross-entropy loss on dense per-pixel labels, apply the lcfcn loss on point-level annotations.
 
 
 ## Usage
