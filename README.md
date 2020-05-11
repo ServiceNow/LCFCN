@@ -54,8 +54,7 @@ This command installs pydicom and the [Haven library](https://github.com/Element
 - Shanghai: `curl -L https://www.dropbox.com/sh/pwmoej499sfqb08/AABY13YraHYF51yw62Zc1w0-a?dl=0 `
 - Trancos: `curl -L https://www.dropbox.com/sh/rms4dg5autwtpnf/AADQBOr1ruFsptbqG_uPt_zCa?dl=0` -->
 
-#### 2.2 Run training and validation
-
+### 3. Train and Validate
 ```
 python trainval.py -e trancos -d <datadir> -sb <savedir_base> -r 1
 ```
@@ -64,7 +63,7 @@ python trainval.py -e trancos -d <datadir> -sb <savedir_base> -r 1
 - `<savedir_base>` is where the experiment weights and results will be saved.
 - `-e trancos` specifies the trancos training hyper-parameters defined in [`exp_configs.py`](exp_configs.py).
 
-###  3. Results
+###  4. View Results
 #### 3.1 Launch Jupyter from terminal
 
 ```
