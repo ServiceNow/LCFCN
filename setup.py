@@ -1,4 +1,4 @@
-rom setuptools import setup
+from setuptools import setup
 
 setup(name='lcfcn',
       version='0.6.0',
