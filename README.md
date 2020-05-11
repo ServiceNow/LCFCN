@@ -25,7 +25,7 @@ loss.backward()
 ## Output 
 The model can learn to output the following predictions training on point supervision only.
 
-<img src="results/landmark.png" width="450" height="150">
+<img src="results/landmark.png" width="550" height="180">
 
 
 
