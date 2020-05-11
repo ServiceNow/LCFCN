@@ -3,11 +3,11 @@
 ## Where are the Blobs: Counting by Localization with Point Supervision
 [[Paper]](https://arxiv.org/abs/1807.09856)[[Video]](https://youtu.be/DHKD8LGvX6c)
 
-
+Make the segmentation model learn to count and localize objects by adding a single line of code. Instead of the cross-entropy loss on the per-pixels, apply the lcfcn loss.
 
 
 ## Usage
-Turn your segmentation model into a counting and a landmark detection model using the lcfcn loss.
+
 ```
 pip install git+https://github.com/ElementAI/LCFCN
 ```
@@ -22,8 +22,7 @@ logits = seg_model.forward(images)
 loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
 loss.backward()
 ```
-## Output 
-The model can learn to output the following predictions training on point supervision only.
+## Predicted Object Locations
 
 <img src="results/landmark.png" width="550" height="180">
 
