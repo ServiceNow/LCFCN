@@ -18,9 +18,7 @@ EXP_GROUPS['shanghai'] =  {"dataset": {'name':'shanghai',
          "model": {'name':'lcfcn','base':"fcn8_vgg16"},
          "batch_size": [1],
          "max_epoch": [100],
-         'dataset_size': 
-        #  {'train':1, 'val':1},
-                          {'train':'all', 'val':'all'},],
+         'dataset_size': {'train':'all', 'val':'all'},
          'optimizer':['adam'],
          'lr':[1e-5]
          }
