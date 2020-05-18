@@ -10,7 +10,7 @@ from skimage.morphology import watershed
 from skimage.segmentation import find_boundaries
 
 
-def compute_lcfcn_loss(logits, points):
+def compute_lcfcn_loss(logits, points, reduction='mean', add_global_split=True):
     """Computes the lcfcn loss.
 
     Parameters
@@ -32,24 +32,28 @@ def compute_lcfcn_loss(logits, points):
     probs_log = F.log_softmax(logits, 1)
 
     # IMAGE LOSS
-    loss = compute_image_loss(probs, points)
+    iloss = compute_image_loss(probs, points)
 
     # POINT LOSS
-    loss += F.nll_loss(probs_log, points,
+    ploss = F.nll_loss(probs_log, points,
                        ignore_index=0,
-                       reduction='sum')
+                       reduction='mean')
 
     blob_dict = get_blob_dict(logits, points)
+
+    # split loss
+    sloss = compute_split_loss(probs_log, probs,
+                                   points, blob_dict, 
+                                   add_global_loss=add_global_split, 
+                                   reduction=reduction)
+
     # FP loss
-    if blob_dict["n_fp"] > 0:
-        loss += compute_fp_loss(probs_log, blob_dict)
+    floss = compute_fp_loss(probs_log, blob_dict, 
+                                reduction=reduction)
 
-    # split_mode loss
-    if blob_dict["n_multi"] > 0:
-        loss += compute_split_loss(probs_log, probs,
-                                   points, blob_dict, add_global_loss=True)
 
-    return loss
+
+    return iloss + ploss + sloss + floss
 
 # Loss Utils
 
@@ -58,21 +62,24 @@ def compute_image_loss(logits, points):
     n, k, h, w = logits.size()
 
     # get target
-    labels = torch.zeros(k)
+    labels = torch.zeros(k, device=logits.device)
     labels[points.unique()] = 1
     logits_max = logits.view(n, k, h*w).max(2)[0].view(-1)
 
-    loss = F.binary_cross_entropy(logits_max, labels.cuda(), reduction='sum')
+    loss = F.binary_cross_entropy(logits_max, labels, reduction='sum')
 
     return loss
 
 
-def compute_fp_loss(probs_log, blob_dict):
+def compute_fp_loss(probs_log, blob_dict, reduction='sum'):
+    if blob_dict["n_fp"] == 0:
+        return 0.
+
     blobs = blob_dict["blobs"]
 
-    scale = 1.
+    
     loss = 0.
-
+    n_fp = 0.
     for b in blob_dict["blobList"]:
         if b["n_points"] != 0:
             continue
@@ -80,18 +87,26 @@ def compute_fp_loss(probs_log, blob_dict):
         T = np.ones(blobs.shape[-2:])
         T[blobs[b["class"]] == b["label"]] = 0
 
-        loss += scale * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+        loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
                                    ignore_index=1, reduction='mean')
+        n_fp += 1
+
+    if reduction == 'mean':
+        loss = loss / max(n_fp, 1)
+
     return loss
 
 
-def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=False):
+def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=False, reduction='sum'):
+    if blob_dict["n_multi"] == 0:
+        return 0.
+
     blobs = blob_dict["blobs"]
     probs_numpy = probs[0].detach().cpu().numpy()
     points_numpy = points.cpu().numpy().squeeze()
 
     loss = 0.
-
+    n_multi = 0.
     for b in blob_dict["blobList"]:
         if b["n_points"] < 2:
             continue
@@ -105,9 +120,12 @@ def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=Fals
         T = watersplit(probs, points_class*blob_ind)*blob_ind
         T = 1 - T
 
-        scale = b["n_points"] + 1
-        loss += float(scale) * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+        loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
                                           ignore_index=1, reduction='mean')
+        n_multi += 1
+        
+    if reduction == 'mean':
+        loss = loss / max(n_multi, 1)
 
     if add_global_loss:
         for l in range(1, probs_numpy.shape[1]):
@@ -118,9 +136,9 @@ def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=Fals
 
             T = watersplit(probs_numpy[l], points_class)
             T = 1 - T
-            scale = float(points_class.sum())
-            loss += float(scale) * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
-                                              ignore_index=1, reduction='mean')
+            # scale = float(points_class.sum())
+            loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+                               ignore_index=1, reduction='mean')
 
     return loss
 
@@ -215,6 +233,7 @@ def get_blob_dict(logits, points):
 
 
 def blobs2points(blobs):
+    blobs = blobs.squeeze()
     points = np.zeros(blobs.shape).astype("uint8")
     rps = skimage.measure.regionprops(blobs)
 
@@ -226,3 +245,25 @@ def blobs2points(blobs):
         points[int(y), int(x)] = 1
 
     return points
+
+def compute_game(pred_points, gt_points, L=1):
+    n_rows = 2**L
+    n_cols = 2**L
+
+    pred_points = pred_points.astype(float).squeeze()
+    gt_points = gt_points.astype(float).squeeze()
+    h, w = pred_points.shape
+    se = 0.
+
+    hs, ws = h//n_rows, w//n_cols
+    for i in range(n_rows):
+        for j in range(n_cols):
+
+            sr, er = hs*i, hs*(i+1)
+            sc, ec = ws*j, ws*(j+1)
+
+            pred_count = pred_points[sr:er, sc:ec]
+            gt_count = gt_points[sr:er, sc:ec]
+            
+            se += float(abs(gt_count.sum() - pred_count.sum()))
+    return se
