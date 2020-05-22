@@ -15,7 +15,6 @@ import numpy as np
 
 from src import models
 from src import datasets
-from src import utils as ut
 
 
 import argparse
