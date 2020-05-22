@@ -5,7 +5,6 @@ from torchvision import transforms
 import os, tqdm
 import numpy as np
 import time
-from src import utils as ut
 from sklearn.metrics import confusion_matrix
 import skimage
 from lcfcn import lcfcn_loss

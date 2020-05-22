@@ -10,7 +10,9 @@ from skimage.morphology import watershed
 from skimage.segmentation import find_boundaries
 
 
-def compute_lcfcn_loss(logits, points, reduction='mean', add_global_split=True):
+def compute_lcfcn_loss(logits, points, reduction='mean',
+                       add_global_split=True, 
+                       roi_mask=None):
     """Computes the lcfcn loss.
 
     Parameters
@@ -37,9 +39,9 @@ def compute_lcfcn_loss(logits, points, reduction='mean', add_global_split=True):
     # POINT LOSS
     ploss = F.nll_loss(probs_log, points,
                        ignore_index=0,
-                       reduction='mean')
+                       reduction='sum')
 
-    blob_dict = get_blob_dict(logits, points)
+    blob_dict = get_blob_dict(logits, points, roi_mask=roi_mask)
 
     # split loss
     sloss = compute_split_loss(probs_log, probs,
@@ -97,7 +99,8 @@ def compute_fp_loss(probs_log, blob_dict, reduction='sum'):
     return loss
 
 
-def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=False, reduction='sum'):
+def compute_split_loss(probs_log, probs, points, blob_dict,
+                 add_global_loss=False, reduction='sum'):
     if blob_dict["n_multi"] == 0:
         return 0.
 
@@ -120,7 +123,7 @@ def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=Fals
         T = watersplit(probs, points_class*blob_ind)*blob_ind
         T = 1 - T
 
-        loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+        loss += (b["n_points"] - 1) * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
                                           ignore_index=1, reduction='mean')
         n_multi += 1
         
@@ -136,8 +139,9 @@ def compute_split_loss(probs_log, probs, points, blob_dict, add_global_loss=Fals
 
             T = watersplit(probs_numpy[l], points_class)
             T = 1 - T
-            # scale = float(points_class.sum())
-            loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+            scale = float(points_class.sum())
+            # hu.save_image('tmp.png', T)
+            loss += scale * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
                                ignore_index=1, reduction='mean')
 
     return loss
@@ -155,10 +159,10 @@ def watersplit(_probs, _points):
     return find_boundaries(seg)
 
 
-def get_blobs(logits):
+def get_blobs(logits, roi_mask=None):
     n, k, _, _ = logits.shape
     pred_mask = logits.max(1)[1].squeeze().cpu().numpy()
-
+    
     h, w = pred_mask.shape
     blobs = np.zeros((k - 1, h, w), int)
 
@@ -167,12 +171,15 @@ def get_blobs(logits):
             continue
         blobs[category_id - 1] = morph.label(pred_mask == category_id)
 
+    if roi_mask is not None:
+        blobs = (blobs * roi_mask[None]).astype(int)
+
     return blobs
 
 
 @torch.no_grad()
-def get_blob_dict(logits, points):
-    blobs = get_blobs(logits)
+def get_blob_dict(logits, points, roi_mask=None):
+    blobs = get_blobs(logits, roi_mask=roi_mask)
     points = points.cpu().numpy().squeeze()
 
     if blobs.ndim == 2:
@@ -194,7 +201,10 @@ def get_blob_dict(logits, points):
         uniques = np.delete(np.unique(class_blobs), blob_uniques)
 
         for u in uniques:
-            blobList += [{"class": l, "label": u, "n_points": 0, "size": 0,
+            blobList += [{"class": l, 
+                          "label": u, 
+                          "n_points": 0, 
+                          "size": 0,
                           "pointsList": []}]
             n_fp += 1
 
@@ -251,7 +261,7 @@ def compute_game(pred_points, gt_points, L=1):
     n_cols = 2**L
 
     pred_points = pred_points.astype(float).squeeze()
-    gt_points = gt_points.astype(float).squeeze()
+    gt_points = np.array(gt_points).astype(float).squeeze()
     h, w = pred_points.shape
     se = 0.
 
@@ -267,3 +277,13 @@ def compute_game(pred_points, gt_points, L=1):
             
             se += float(abs(gt_count.sum() - pred_count.sum()))
     return se
+
+def save_tmp(fname, images, logits, points):
+    from haven import haven_utils as hu
+    probs = F.softmax(logits, 1); 
+    mask = probs.argmax(dim=1).cpu().numpy().astype('uint8').squeeze()*255
+    img_mask=hu.save_image('tmp2.png', 
+                hu.denormalize(images, mode='rgb'), 
+                mask=mask, return_image=True)
+    hu.save_image(fname,np.array(img_mask)/255. , 
+                    points=att_dict['points'])
