@@ -1,7 +1,6 @@
 
 
 import cv2, os
-from src import utils as ut
 import pandas as pd
 import numpy as np
 import random
