@@ -89,7 +89,7 @@ def compute_fp_loss(probs_log, blob_dict, reduction='sum'):
         T = np.ones(blobs.shape[-2:])
         T[blobs[b["class"]] == b["label"]] = 0
 
-        loss += F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+        loss += F.nll_loss(probs_log, torch.LongTensor(T).to(device=probs_log.device)[None],
                                    ignore_index=1, reduction='mean')
         n_fp += 1
 
@@ -123,7 +123,7 @@ def compute_split_loss(probs_log, probs, points, blob_dict,
         T = watersplit(probs, points_class*blob_ind)*blob_ind
         T = 1 - T
 
-        loss += (b["n_points"] - 1) * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+        loss += (b["n_points"] - 1) * F.nll_loss(probs_log, torch.LongTensor(T).to(device=probs_log.device)[None],
                                           ignore_index=1, reduction='mean')
         n_multi += 1
         
@@ -141,7 +141,7 @@ def compute_split_loss(probs_log, probs, points, blob_dict,
             T = 1 - T
             scale = float(points_class.sum())
             # hu.save_image('tmp.png', T)
-            loss += scale * F.nll_loss(probs_log, torch.LongTensor(T).cuda()[None],
+            loss += scale * F.nll_loss(probs_log, torch.LongTensor(T).to(device=probs_log.device)[None],
                                ignore_index=1, reduction='mean')
 
     return loss

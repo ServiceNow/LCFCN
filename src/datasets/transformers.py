@@ -32,9 +32,6 @@ class ComposeJoint(object):
         return x
 
     def _iterate_transforms(self, transforms, x):
-        """Credit @fmassa:
-         https://gist.github.com/fmassa/3df79c93e82704def7879b2f77cd45de
-        """
         if isinstance(transforms, collections.Iterable):
             for i, transform in enumerate(transforms):
                 x[i] = self._iterate_transforms(transform, x[i])
