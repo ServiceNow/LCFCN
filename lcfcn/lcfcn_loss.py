@@ -9,10 +9,10 @@ from skimage import morphology as morph
 from skimage.segmentation import find_boundaries
 
 
-def compute_loss(points, probs, roi_mask=None):
+def compute_loss(probs, points, roi_mask=None, recompute_watershed=True):
     """
-    points: h x w (0 or 1)
     probs: h x w (between 0 and 1)
+    points: h x w (0 or 1)
     """
     points = points.squeeze()
     probs = probs.squeeze()
@@ -25,7 +25,7 @@ def compute_loss(points, probs, roi_mask=None):
     assert probs.shape[0] == points.shape[0]
     assert probs.shape[1] == points.shape[1]
 
-    tgt_list = get_tgt_list(points, probs, roi_mask=roi_mask)
+    tgt_list = get_tgt_list(points, probs, roi_mask=roi_mask, recompute_watershed=recompute_watershed)
 
     # image level
     # pt_flat = points.view(-1)
@@ -43,7 +43,7 @@ def compute_loss(points, probs, roi_mask=None):
     return loss
 
 @torch.no_grad()
-def get_tgt_list(points, probs, roi_mask=None):
+def get_tgt_list(points, probs, roi_mask=None, recompute_watershed=True):
     tgt_list = []
 
     # image level
@@ -79,8 +79,8 @@ def get_tgt_list(points, probs, roi_mask=None):
 
     if n_total > 1:
         # global split
-        boundaries = watersplit(probs_numpy, points)
-        ind_bg = np.where(boundaries.ravel())[0]
+        global_boundaries = watersplit(probs_numpy, points)
+        ind_bg = np.where(global_boundaries.ravel())[0]
 
         tgt_list += [{'scale': (n_total-1), 'ind_list':ind_bg, 'label':0}]  
 
@@ -98,7 +98,10 @@ def get_tgt_list(points, probs, roi_mask=None):
                 continue
             
             # local split
-            boundaries = watersplit(probs_numpy, b_points)*ind
+            if recompute_watershed:
+                boundaries = watersplit(probs_numpy, b_points)*ind
+            else:
+                boundaries = global_boundaries*ind
             ind_bg = np.where(boundaries.ravel())[0]
 
             tgt_list += [{'scale': (n_points - 1), 'ind_list':ind_bg, 'label':0}]  

@@ -90,8 +90,8 @@ class LCFCN(torch.nn.Module):
 
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
-        logits = self.model_base.forward(images)
-        loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
+        probs = self.model_base.forward(images).sigmoid()
+        loss = lcfcn_loss.compute_loss(probs, points, recompute_watershed=False)
         
         loss.backward()
 
@@ -107,15 +107,16 @@ class LCFCN(torch.nn.Module):
         return state_dict
 
     def load_state_dict(self, state_dict):
-        self.model.load_state_dict(state_dict["model"])
+        self.model_base.load_state_dict(state_dict["model"])
         self.opt.load_state_dict(state_dict["opt"])
 
+    @torch.no_grad()
     def val_on_batch(self, batch):
         self.eval()
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
-        logits = self.model_base.forward(images)
-        blobs = lcfcn_loss.get_blobs(logits)
+        probs = self.model_base.forward(images).sigmoid().cpu().numpy()
+        blobs = lcfcn_loss.get_blobs(probs.squeeze())
 
         return {'miscounts': abs(float((np.unique(blobs)!=0).sum() - 
                                 (points!=0).sum()))}
@@ -125,12 +126,12 @@ class LCFCN(torch.nn.Module):
         self.eval()
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
-        logits = self.model_base.forward(images)
-        blobs = lcfcn_loss.get_blobs(logits)
+        probs = self.model_base.forward(images).sigmoid().squeeze().cpu().numpy()
+        blobs = lcfcn_loss.get_blobs(probs)
 
         pred_counts = (np.unique(blobs)!=0).sum()
         pred_blobs = blobs
-        pred_probs = F.softmax(logits, dim=1)
+        pred_probs = probs
 
         # loc 
         pred_count = pred_counts.ravel()[0]
@@ -152,7 +153,7 @@ class LCFCN(torch.nn.Module):
         haven_img.text_on_image(text=text, image=img_pred)
 
         # heatmap 
-        heatmap = hi.gray2cmap(pred_probs.squeeze().cpu().numpy())
+        heatmap = hi.gray2cmap(probs)
         heatmap = hu.f2l(heatmap)
         haven_img.text_on_image(text="lcfcn heatmap", image=heatmap)
         

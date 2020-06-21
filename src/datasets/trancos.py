@@ -15,7 +15,7 @@ class Trancos(data.Dataset):
         self.split = split
         self.exp_dict = exp_dict
         
-        self.n_classes = 2
+        self.n_classes = 1
         
         if split == "train":
             fname = os.path.join(datadir, 'image_sets', 'training.txt')
