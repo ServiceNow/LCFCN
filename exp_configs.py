@@ -7,8 +7,7 @@ EXP_GROUPS['trancos'] =  {"dataset": {'name':'trancos',
          "batch_size": [1,5,10],
          "max_epoch": [100],
          'dataset_size': [
-                        {'train':5, 'val':5},
-                          # {'train':'all', 'val':'all'},
+                          {'train':'all', 'val':'all'},
                           ],
          'optimizer':['adam'],
          'lr':[1e-5]
@@ -20,6 +19,19 @@ EXP_GROUPS['shanghai'] =  {"dataset": {'name':'shanghai',
          "batch_size": [1],
          "max_epoch": [100],
          'dataset_size': {'train':'all', 'val':'all'},
+         'optimizer':['adam'],
+         'lr':[1e-5]
+         }
+
+EXP_GROUPS['trancos_debug'] =  {"dataset": {'name':'trancos', 
+                          'transform':'rgb_normalize'},
+         "model": {'name':'lcfcn','base':"fcn8_vgg16"},
+         "batch_size": [1,5,10],
+         "max_epoch": [100],
+         'dataset_size': [
+                        {'train':1, 'val':1},
+                          # {'train':'all', 'val':'all'},
+                          ],
          'optimizer':['adam'],
          'lr':[1e-5]
          }

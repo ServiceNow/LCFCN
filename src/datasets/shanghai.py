@@ -12,7 +12,7 @@ from . import transformers
 class Shanghai(data.Dataset):
     def __init__(self, split, datadir, exp_dict):
         self.split = split
-        self.n_classes = 2
+        self.n_classes = 1
         self.exp_dict = exp_dict
 
         if split == "train":

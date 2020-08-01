@@ -2,12 +2,10 @@ import torch
 import skimage
 import torch.nn.functional as F
 import numpy as np
-from skimage.morphology import watershed
+from skimage.segmentation import watershed
 from skimage.segmentation import find_boundaries
 from scipy import ndimage
 from skimage import morphology as morph
-from skimage.morphology import watershed
-from skimage.segmentation import find_boundaries
 
 
 
@@ -134,6 +132,7 @@ def watersplit(_probs, _points):
 
 
 def get_blobs(probs, roi_mask=None):
+    probs = probs.squeeze()
     h, w = probs.shape
  
     pred_mask = (probs>0.5).astype('uint8')

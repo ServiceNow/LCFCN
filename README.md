@@ -19,7 +19,8 @@ from lcfcn import lcfcn_loss
 logits = seg_model.forward(images)
 
 # compute loss given 'points' as HxW mask (1 pixel label per object)
-loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
+loss = lcfcn_loss.compute_loss(points=points, probs=logits.sigmoid())
+
 loss.backward()
 ```
 ## Predicted Object Locations

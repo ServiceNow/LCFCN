@@ -91,7 +91,7 @@ class LCFCN(torch.nn.Module):
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
         logits = self.model_base.forward(images)
-        loss = lcfcn_loss.compute_lcfcn_loss(logits, points)
+        loss = lcfcn_loss.compute_loss(points=points, probs=logits.sigmoid())
         
         loss.backward()
 
@@ -107,7 +107,7 @@ class LCFCN(torch.nn.Module):
         return state_dict
 
     def load_state_dict(self, state_dict):
-        self.model.load_state_dict(state_dict["model"])
+        self.model_base.load_state_dict(state_dict["model"])
         self.opt.load_state_dict(state_dict["opt"])
 
     def val_on_batch(self, batch):
@@ -115,22 +115,26 @@ class LCFCN(torch.nn.Module):
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
         logits = self.model_base.forward(images)
-        blobs = lcfcn_loss.get_blobs(logits)
+        probs = logits.sigmoid().cpu().numpy()
+
+        blobs = lcfcn_loss.get_blobs(probs=probs)
 
         return {'miscounts': abs(float((np.unique(blobs)!=0).sum() - 
                                 (points!=0).sum()))}
         
-    
+    @torch.no_grad()
     def vis_on_batch(self, batch, savedir_image):
         self.eval()
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
         logits = self.model_base.forward(images)
-        blobs = lcfcn_loss.get_blobs(logits)
+        probs = logits.sigmoid().cpu().numpy()
+
+        blobs = lcfcn_loss.get_blobs(probs=probs)
 
         pred_counts = (np.unique(blobs)!=0).sum()
         pred_blobs = blobs
-        pred_probs = F.softmax(logits, dim=1)
+        pred_probs = probs.squeeze()
 
         # loc 
         pred_count = pred_counts.ravel()[0]
@@ -147,17 +151,18 @@ class LCFCN(torch.nn.Module):
         # pred points 
         pred_points = lcfcn_loss.blobs2points(pred_blobs).squeeze()
         y_list, x_list = np.where(pred_points.squeeze())
-        img_pred = haven_img.points_on_image(y_list, x_list, img_org)
+        img_pred = hi.mask_on_image(img_org, pred_blobs)
+        # img_pred = haven_img.points_on_image(y_list, x_list, img_org)
         text = "%s predicted" % (len(y_list))
         haven_img.text_on_image(text=text, image=img_pred)
 
         # heatmap 
-        heatmap = hi.gray2cmap(pred_probs.squeeze().cpu().numpy())
+        heatmap = hi.gray2cmap(pred_probs)
         heatmap = hu.f2l(heatmap)
         haven_img.text_on_image(text="lcfcn heatmap", image=heatmap)
         
         
-        img_mask = np.hstack([img_peaks, img_pred])
+        img_mask = np.hstack([img_peaks, img_pred, heatmap])
         
         hu.save_image(savedir_image, img_mask)
      
