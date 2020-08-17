@@ -65,7 +65,7 @@ def get_tgt_list(points, probs, roi_mask=None):
     # get foreground and background blobs
     points = points.cpu().numpy()
     fg_uniques = np.unique(blobs * points)
-    bg_uniques = np.delete(np.unique(blobs), fg_uniques)
+    bg_uniques = delete_values(x=np.unique(blobs), v=fg_uniques) 
 
     # split level
     # -----------
@@ -117,7 +117,11 @@ def get_tgt_list(points, probs, roi_mask=None):
     return tgt_list 
 
 
-
+def delete_values(x, v):
+    new_array = x.copy()
+    for vi in v:
+        new_array = new_array[new_array != vi]
+    return new_array
 
 def watersplit(_probs, _points):
     points = _points.copy()
