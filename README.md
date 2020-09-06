@@ -36,7 +36,7 @@ loss.backward()
 ```
 pip install -r requirements.txt
 ```
-This command installs pydicom and the [Haven library](https://github.com/ElementAI/haven) which helps in managing the experiments.
+This command installs pydicom and the [Haven library](https://github.com/IssamLaradji/haven) which helps in managing the experiments.
 
 
 ### 2. Download Datasets
