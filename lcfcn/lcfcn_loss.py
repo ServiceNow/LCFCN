@@ -11,30 +11,38 @@ from skimage import morphology as morph
 
 def compute_loss(points, probs, roi_mask=None):
     """
-    images: n x c x h x w
-    probs: h x w (0 or 1)
+    points: h x w (0, 1, 2, ..., or c)
+    probs: k x h x w (0 to 1)
     """
-    points = points.squeeze()
-    probs = probs.squeeze()
+    assert points.ndim == 2
+    assert probs.ndim == 3
 
-    assert(points.max() <= 1)
-
-    tgt_list = get_tgt_list(points, probs, roi_mask=roi_mask)
-
-    # image level
-    # pt_flat = points.view(-1)
-    pr_flat = probs.view(-1)
-    
-    # compute loss
+    # loop across classes
+    n_classes = probs.shape[0]
     loss = 0.
-    for tgt_dict in tgt_list:
-        pr_subset = pr_flat[tgt_dict['ind_list']]
-        # pr_subset = pr_subset.cpu()
-        loss += tgt_dict['scale'] * F.binary_cross_entropy(pr_subset, 
-                                        torch.ones(pr_subset.shape, device=pr_subset.device) * tgt_dict['label'], 
-                                        reduction='mean')
+    for c in range(1, n_classes+1):
+        probs_class = probs[c-1]
+        points_class = (points==c).long()
+        pr_flat = probs_class.view(-1)
+
+        if points_class.sum() == 0:
+            loss += F.binary_cross_entropy(pr_flat.max()[None], 
+                                            torch.zeros(1, device=pr_flat.device), 
+                                            reduction='mean') / n_classes
+            continue
+        
+        
+        tgt_list = get_tgt_list(points_class, probs_class, roi_mask=roi_mask)
+
+        # compute loss
+        for tgt_dict in tgt_list:
+            pr_subset = pr_flat[tgt_dict['ind_list']]
+            # pr_subset = pr_subset.cpu()
+            loss += tgt_dict['scale'] * F.binary_cross_entropy(pr_subset, 
+                                            torch.ones(pr_subset.shape, device=pr_subset.device) * tgt_dict['label'], 
+                                            reduction='mean')
     
-    return loss
+    return loss 
 
 @torch.no_grad()
 def get_tgt_list(points, probs, roi_mask=None):

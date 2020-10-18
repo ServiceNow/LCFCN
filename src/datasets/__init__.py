@@ -8,7 +8,7 @@ import pandas as pd
 import  numpy as np
 import os
 import torch.utils.data as torchdata
-from . import trancos, shanghai
+from . import trancos, shanghai, pascal
 
 
 import torch 
@@ -36,6 +36,10 @@ def get_dataset(dataset_dict, split, datadir, exp_dict, dataset_size=None):
         if dataset_size is not None and dataset_size[split] != 'all':
             dataset.img_names = dataset.img_names[:dataset_size[split]]
 
+    elif name == 'pascal':
+        dataset = pascal.Pascal(split, datadir=datadir, exp_dict=exp_dict)
+        if dataset_size is not None and dataset_size[split] != 'all':
+            dataset.img_names = dataset.img_names[:dataset_size[split]]
 
     else:
         raise ValueError('dataset %s not defined.' % name)

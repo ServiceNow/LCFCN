@@ -89,8 +89,8 @@ class LCFCN(torch.nn.Module):
         self.train()
 
         images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
-        logits = self.model_base.forward(images)
+        points = batch["points"].long().cuda()[0]
+        logits = self.model_base.forward(images)[0]
         loss = lcfcn_loss.compute_loss(points=points, probs=logits.sigmoid())
         
         loss.backward()
@@ -110,59 +110,80 @@ class LCFCN(torch.nn.Module):
         self.model_base.load_state_dict(state_dict["model"])
         self.opt.load_state_dict(state_dict["opt"])
 
+    @torch.no_grad()
     def val_on_batch(self, batch):
         self.eval()
         images = batch["images"].cuda()
         points = batch["points"].long().cuda()
         logits = self.model_base.forward(images)
-        probs = logits.sigmoid().cpu().numpy()
+        probs = logits.sigmoid().cpu().numpy()[0]
 
-        blobs = lcfcn_loss.get_blobs(probs=probs)
+        miscount_list = []
+        for c in range(1, probs.shape[0]+1):
+            probs_class = probs[c-1]
+            points_class = (points == c).long()
+            blobs = lcfcn_loss.get_blobs(probs=probs_class)
 
-        return {'miscounts': abs(float((np.unique(blobs)!=0).sum() - 
-                                (points!=0).sum()))}
-        
+            miscount_list += [abs(float((np.unique(blobs)!=0).sum() - 
+                                (points!=0).sum()))]
+
+        return {'miscounts': np.mean(miscount_list) }
+    
+
     @torch.no_grad()
     def vis_on_batch(self, batch, savedir_image):
         self.eval()
         images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        points = batch["points"].long().cuda()[0]
         logits = self.model_base.forward(images)
-        probs = logits.sigmoid().cpu().numpy()
+        probs = logits.sigmoid().cpu().numpy()[0]
+        
+        n_classes = probs.shape[0]
+        img_list = []
+        for c in range(1, n_classes+1):
+            points_class = (points == c).long()
+            if points_class.sum() == 0:
+                continue 
+            probs_class = probs[c-1]
+            pred = self.vis_class(batch["images"], points_class, probs_class, c)
+            img_list += [pred]
 
-        blobs = lcfcn_loss.get_blobs(probs=probs)
-
+        hu.save_image(savedir_image, np.vstack(img_list))
+     
+    
+    def vis_class(self, images, points_class, probs_class, class_id):
+        blobs = lcfcn_loss.get_blobs(probs=probs_class)
         pred_counts = (np.unique(blobs)!=0).sum()
+
         pred_blobs = blobs
-        pred_probs = probs.squeeze()
+        pred_probs = probs_class.squeeze()
 
         # loc 
         pred_count = pred_counts.ravel()[0]
         pred_blobs = pred_blobs.squeeze()
         
-        img_org = hu.get_image(batch["images"],denorm="rgb")
+        img_org = hu.get_image(images,denorm="rgb")
 
         # true points
-        y_list, x_list = np.where(batch["points"][0].long().numpy().squeeze())
+        y_list, x_list = np.where(points_class.cpu().long().numpy().squeeze())
         img_peaks = haven_img.points_on_image(y_list, x_list, img_org)
-        text = "%s ground truth" % (batch["points"].sum().item())
+        text = "class %d gt count: %d" % (class_id, points_class.sum().item())
         haven_img.text_on_image(text=text, image=img_peaks)
 
         # pred points 
         pred_points = lcfcn_loss.blobs2points(pred_blobs).squeeze()
         y_list, x_list = np.where(pred_points.squeeze())
-        img_pred = hi.mask_on_image(img_org, pred_blobs)
+        img_pred = hi.mask_on_image(img_org, pred_blobs, add_bbox=True)
         # img_pred = haven_img.points_on_image(y_list, x_list, img_org)
-        text = "%s predicted" % (len(y_list))
+        text = "class %d pred count: %d" % (class_id, len(y_list))
         haven_img.text_on_image(text=text, image=img_pred)
 
         # heatmap 
         heatmap = hi.gray2cmap(pred_probs)
         heatmap = hu.f2l(heatmap)
-        haven_img.text_on_image(text="lcfcn heatmap", image=heatmap)
+        haven_img.text_on_image(text="class %d heatmap" % class_id, image=heatmap)
         
+        img_class = np.hstack([img_peaks, img_pred, heatmap])
+        pred_class = np.array(hu.save_image('tmp', img_class, return_image=True))
         
-        img_mask = np.hstack([img_peaks, img_pred, heatmap])
-        
-        hu.save_image(savedir_image, img_mask)
-     
+        return pred_class 

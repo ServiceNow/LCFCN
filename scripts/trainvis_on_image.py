@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader
 from src import datasets
 # from src import optimizers 
 import torchvision
-
+import argparse
 cudnn.benchmark = True
 
 from haven import haven_utils as hu
@@ -41,7 +41,14 @@ from PIL import Image
 
 
 if __name__ == "__main__":
-    exp_dict = {"dataset": {'name':'trancos', 
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-dn', '--dataset_name', required=True)
+    parser.add_argument('-d', '--datadir', required=True)
+
+    args = parser.parse_args()
+    
+    exp_dict = {"dataset": {'name':args.dataset_name, 
                           'transform':'rgb_normalize'},
          "model": {'name':'lcfcn','base':"fcn8_vgg16"},
          "batch_size": 1,
@@ -51,7 +58,7 @@ if __name__ == "__main__":
          'lr':1e-5}
     
     train_set = datasets.get_dataset(dataset_dict=exp_dict['dataset'],
-                datadir='/mnt/public/datasets/Trancos', split="test",exp_dict=exp_dict)
+                datadir=args.datadir, split="test",exp_dict=exp_dict)
     model = models.get_model(model_dict=exp_dict['model'],
                              exp_dict=exp_dict,
                              train_set=train_set).cuda()
@@ -62,7 +69,8 @@ if __name__ == "__main__":
     # train for several iterations
     for i in range(1000):
         loss = model.train_on_batch(batch)
-        print(i, '- loss:', float(loss['train_loss']))
+        val_dict = model.val_on_batch(batch)
+        print(i, '- loss:', float(loss['train_loss']), '- miscounts:', val_dict['miscounts'])
 
     # visualize blobs and heatmap
-    model.vis_on_batch(batch, savedir_image='result.png')
+    model.vis_on_batch(batch, savedir_image='scripts/result.png')
