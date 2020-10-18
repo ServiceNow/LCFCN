@@ -67,7 +67,7 @@ if __name__ == "__main__":
     batch['points'] = batch['points'][None]
 
     # train for several iterations
-    for i in range(1000):
+    for i in range(200):
         loss = model.train_on_batch(batch)
         val_dict = model.val_on_batch(batch)
         print(i, '- loss:', float(loss['train_loss']), '- miscounts:', val_dict['miscounts'])
