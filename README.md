@@ -72,6 +72,7 @@ python scripts/trainval_single_batch.py -dn <dataset_name> -d <datadir>
 - `<datadir>` is where the dataset is located.
 - `<dataset_name>` refers to the name of the dataset `{trancos, pascal, ...}`.
 
+<img src="scripts/result.png">
 
 ###  4. View Results
 #### 3.1 Launch Jupyter from terminal
