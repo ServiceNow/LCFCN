@@ -79,7 +79,7 @@ from haven import haven_results as hr
 savedir_base = <savedir_base>
 
 # filter exps
-filterby_list = [('dataset.name','trancos')]
+filterby_list = None
 # get experiments
 rm = hr.ResultManager(savedir_base=savedir_base, 
                       filterby_list=filterby_list, 
