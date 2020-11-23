@@ -75,6 +75,11 @@ python trainval.py -e trancos -d <datadir> -sb <savedir_base> -r 1
 from haven import haven_jupyter as hj
 from haven import haven_results as hr
 
+try:
+    %load_ext google.colab.data_table
+except:
+    pass
+
 # path to where the experiments got saved
 savedir_base = <savedir_base>
 
@@ -85,7 +90,6 @@ rm = hr.ResultManager(savedir_base=savedir_base,
                       filterby_list=filterby_list, 
                       verbose=0)
 # dashboard variables
-legend_list = ['model.base']
 title_list = ['dataset', 'model']
 y_metrics = ['val_mae']
 
