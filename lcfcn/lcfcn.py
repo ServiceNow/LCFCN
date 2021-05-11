@@ -4,6 +4,7 @@ import pandas as pd
 from skimage.segmentation import expand_labels
 from skimage.color import label2rgb
 import os, tqdm
+from skimage import segmentation
 import numpy as np
 from lcfcn import lcfcn_loss
 from haven import haven_utils as hu
