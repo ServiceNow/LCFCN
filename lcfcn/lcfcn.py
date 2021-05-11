@@ -11,9 +11,9 @@ from . import networks
 
 
 class LCFCN(torch.nn.Module):
-    def __init__(self, n_classes=1, lr=1e-5, opt='adam'):
+    def __init__(self, n_classes=1, lr=1e-5, opt='adam', device='cuda'):
         super().__init__()
-
+        self.device = device
         self.model_base = networks.FCN8_VGG16(n_classes=n_classes)
 
         if opt == "adam":
@@ -71,8 +71,8 @@ class LCFCN(torch.nn.Module):
         self.opt.zero_grad()
         self.train()
 
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"].to_device(self.device)
+        points = batch["points"].long().to_device(self.device)
         logits = self.model_base.forward(images)
         loss = lcfcn_loss.compute_loss(points=points, probs=logits.sigmoid())
         
@@ -96,8 +96,8 @@ class LCFCN(torch.nn.Module):
     @torch.no_grad()
     def val_on_batch(self, batch):
         self.eval()
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"].to_device(self.device)
+        points = batch["points"].long().to_device(self.device)
         logits = self.model_base.forward(images)
         probs = logits.sigmoid().cpu().numpy()
 
@@ -111,8 +111,8 @@ class LCFCN(torch.nn.Module):
     @torch.no_grad()
     def vis_on_batch(self, batch, savedir_image):
         self.eval()
-        images = batch["images"].cuda()
-        points = batch["points"].long().cuda()
+        images = batch["images"].to_device(self.device)
+        points = batch["points"].long().to_device(self.device)
         logits = self.model_base.forward(images)
         probs = logits.sigmoid().cpu().numpy()
 
