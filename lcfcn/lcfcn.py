@@ -1,4 +1,5 @@
 import torch
+from torchvision import transforms
 import pandas as pd
 from skimage.segmentation import expand_labels
 from skimage.color import label2rgb
@@ -145,3 +146,14 @@ def convert(img, mask, enlarge=0):
     i[ind] = m[ind] 
 
     return i
+
+def transform_image(image):
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
+
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(mean=mean, std=std)
+        ])
+    return transform(image)
