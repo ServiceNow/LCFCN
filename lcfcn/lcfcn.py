@@ -12,10 +12,13 @@ from . import networks
 
 
 class LCFCN(torch.nn.Module):
-    def __init__(self, n_classes=1, lr=1e-5, opt='adam', device='cuda'):
+    def __init__(self, n_classes=1, lr=1e-5, opt='adam', network='vgg', device='cuda'):
         super().__init__()
         self.device = device
-        self.model_base = networks.FCN8_VGG16(n_classes=n_classes)
+        if network == 'vgg':
+            self.model_base = networks.FCN8_VGG16(n_classes=n_classes)
+        elif network == 'resnet':
+            self.model_base = networks.FCN8_ResNet(n_classes=n_classes)
 
         if opt == "adam":
             self.opt = torch.optim.Adam(
