@@ -10,16 +10,16 @@ from . import networks
 
 
 class LCFCN(torch.nn.Module):
-    def __init__(self, n_classes=1, lr=1e-5):
+    def __init__(self, n_classes=1, lr=1e-5, opt='adam'):
         super().__init__()
 
         self.model_base = networks.FCN8_VGG16(n_classes=n_classes)
 
-        if self.exp_dict["optimizer"] == "adam":
+        if opt == "adam":
             self.opt = torch.optim.Adam(
                 self.model_base.parameters(), lr=lr, betas=(0.99, 0.999), weight_decay=0.0005)
 
-        elif self.exp_dict["optimizer"] == "sgd":
+        elif opt == "sgd":
             self.opt = torch.optim.SGD(
                 self.model_base.parameters(), lr=lr)
 
