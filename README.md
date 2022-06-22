@@ -1,3 +1,5 @@
+*ServiceNow completed its acquisition of Element AI on January 8, 2021. All references to Element AI in the materials that are part of this project should refer to ServiceNow.*
+
 # LCFCN - ECCV 2018 [(Try in a Colab)](https://colab.research.google.com/drive/10NxrkOWKq_r0g91T84NrAqqlTakrsD7U?usp=sharing)
 
 ## Where are the Blobs: Counting by Localization with Point Supervision
